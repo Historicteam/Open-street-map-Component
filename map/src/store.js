@@ -11,7 +11,9 @@ MapStore = {
         objects: {},
         chosen: null,
         contour: null,
-        loaded: true
+        loaded: true,
+        favourites: [],
+        selectable: null
       },
       actionCallbacks: {
         importObject: function(updater, coordinates) {
@@ -37,8 +39,33 @@ MapStore = {
         },
         setLoadState: function(updater, loaded) {
           updater.set({loaded: loaded})
+        },
+        setFavouritesState: function(updater, chosen){
+          if (!this.favourites.includes(chosen))
+             updater.set({favourites: [...this.favourites, chosen]}) 
+        },
+	
+        setSelectable: function(updater, chosen){
+	   updater.set({selectable: chosen})
+	},
+
+	sortFavourites: function(updater){
+          console.log("sortFavourites");
+	  updater.set({favourites: this.favourites.sort((a,b) => {
+       	    if(a.title > b.title)	
+ 		return 1;
+            if(a.title < b.title)
+		return -1;
+            return 0;
         }
-      }
-    });
+        )})
+        },
+
+        deleteFavourite: function(updater, chosen){
+	  if(this.selectable) {
+	    this.favourites = this.favourites.splice(this.favourites.indexOf(chosen), 1);
+	  }
+        }
+    }});
   }
 }

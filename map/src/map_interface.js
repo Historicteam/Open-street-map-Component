@@ -1,3 +1,4 @@
+var isOpen = false;
 var MapInterface = React.createClass({displayName: "MapInterface",
   propTypes: {
     questions: React.PropTypes.array,
@@ -9,6 +10,7 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     this.initChosenListener();
     this.initObjectsListener();
     this.initLoadedListener();
+    this.initFavourites();
   },
 
   cleanModel: function() {
@@ -33,11 +35,19 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     });
   },
 
+  initFavourites: function(){
+    this.props.store.on('change:favourites', (favourites)=>{
+      this.setState({favourites: favourites});
+    });
+
+  },
+
   getInitialState: function() {
     return {
       objects: Object.values(this.props.store.objects),
       chosen: this.props.store.chosen,
-      loaded: this.props.store.loaded
+      loaded: this.props.store.loaded,
+      favourites: this.props.store.favourites
     };
   },
 
@@ -53,16 +63,46 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     fluxify.doAction('importObject', coordinates);
   },
 
+  onAddClick: function(chosen){
+    fluxify.doAction('setFavouritesState', chosen);
+  },
+
+  onSortClick: function(){
+    fluxify.doAction('sortFavourites');
+    this.forceUpdate
+  },
+  
+  onDeleteClick: function(){
+    fluxify.doAction('deleteFavourite');
+    this.forceUpdate();
+  },
+  
+  onSelectableClick: function(chosen){
+    fluxify.doAction('setSelectable', chosen);
+  },
+
+  openHistory: function() {
+    isOpen = isOpen == true ? false : true;
+    this.forceUpdate();
+  },
+
+  
   //TODO remove hard-coded question
   onAgentParamsChange: function(params) {
     SCWeb.core.Main.doCommand(MapKeynodes.get('ui_menu_file_for_finding_persons'), [this.state.chosen.id]);
   },
 
   createViewer: function() {
-    if (this.state.chosen)
+    if (this.state.chosen != null && this.state.chosen)
       return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick})
-    else
+    else if(isOpen == false)
       return React.createElement(List, {objects: this.state.objects, onArticleClick: this.onClick})
+    else 
+      return React.createElement(History, {localHistory: history, onMapClick: this.onClick})
+  },
+
+  createViewerList: function(){
+    return React.createElement(FavouritesList, {favourites: this.props.store.favourites, onSelectableClick: this.onSelectableClick})
   },
 
   render: function() {
@@ -74,9 +114,12 @@ var MapInterface = React.createClass({displayName: "MapInterface",
             React.createElement("div", {className: "form-group"}, 
               React.createElement(QuestionLine, {onChange: this.onAgentParamsChange, questions: this.props.questions})
             ), 
-            React.createElement(Timeline, {onTimeChange: this.onAgentParamsChange}), 
+            React.createElement(Timeline, {onTimeChange: this.onAgentParamsChange}),
+            React.createElement("button", {className: "active", onClick: this.openHistory}, "История"), 
             this.createViewer(),
-            React.createElement(GeneratePath)
+            React.createElement(GeneratePath),
+            React.createElement(FavouritesButtons, {chosen: this.state.chosen, onAddClick:this.onAddClick, onSortClick: this.onSortClick, onDeleteClick: this.onDeleteClick}),
+            this.createViewerList()
           )
         )
       )

@@ -10,7 +10,10 @@
 	"src/generate_path.js",
 	"src/question_line.js",
 	"src/timeline.js",
-	"src/utils.js"   
+	"src/favourites_buttons.js",
+	"src/favourites_list.js",
+	"src/utils.js",
+	"src/history.js"  
         ],
 	
 	"component": "src/map_component.js",
