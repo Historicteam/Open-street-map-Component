@@ -12,13 +12,6 @@ var Article = React.createClass({
   appendArgument: function() {
     SCWeb.core.Arguments.appendArgument(this.props.object.id);
   },
-  addFavorites: function() {
-    favorites.push(this.props.object.id);
-    favorites.forEach((favorite) => console.log(favorite));
-  },
-  openFavorite: function(idOfObject) {
-    SCWeb.core.Main.doDefaultCommand([idOfObject]);
-  },
 
   render: function() {
     return (
