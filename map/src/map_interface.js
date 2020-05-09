@@ -40,6 +40,9 @@ var MapInterface = React.createClass({displayName: "MapInterface",
       this.setState({favourites: favourites});
     });
 
+    this.props.store.on('change:selectable', (selectable)=>{
+      this.setState({selectable: selectable});
+    });
   },
 
   getInitialState: function() {
@@ -47,7 +50,9 @@ var MapInterface = React.createClass({displayName: "MapInterface",
       objects: Object.values(this.props.store.objects),
       chosen: this.props.store.chosen,
       loaded: this.props.store.loaded,
-      favourites: this.props.store.favourites
+      favourites: this.props.store.favourites,
+      selectable: this.props.store.selectable,
+      history: this.props.store.history
     };
   },
 
@@ -68,13 +73,24 @@ var MapInterface = React.createClass({displayName: "MapInterface",
   },
 
   onSortClick: function(){
-    fluxify.doAction('sortFavourites');
-    this.forceUpdate
+    this.props.store.favourites.sort((a,b) => {
+       	    if(a.title > b.title)	
+ 		return 1;
+            if(a.title < b.title)
+		return -1;
+            return 0;
+          }
+          );
+    this.setState({favourites: this.props.store.favourites});
   },
   
   onDeleteClick: function(){
-    fluxify.doAction('deleteFavourite');
-    this.forceUpdate();
+    if(this.props.store.selectable) {
+      this.props.store.favourites.splice(this.favourites.indexOf(this.selectable), 1);
+    }
+    this.selectable = null;
+    this.setState({favourites: this.props.store.favourites});
+    
   },
   
   onSelectableClick: function(chosen){
@@ -86,7 +102,18 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     this.forceUpdate();
   },
 
-  
+  addFavorites: function(object) {
+    if(this.props.store.history.indexOf(object) < 0){
+    	this.props.store.history.push(object);
+        this.setState({history: this.props.store.history});	
+    }
+  },
+
+  clearHistory: function() {
+    this.props.store.history.splice(0, this.props.store.history.length);
+    this.setState({history: this.props.store.history});
+  },
+
   //TODO remove hard-coded question
   onAgentParamsChange: function(params) {
     SCWeb.core.Main.doCommand(MapKeynodes.get('ui_menu_file_for_finding_persons'), [this.state.chosen.id]);
@@ -94,16 +121,21 @@ var MapInterface = React.createClass({displayName: "MapInterface",
 
   createViewer: function() {
     if (this.state.chosen != null && this.state.chosen)
-      return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick})
+      return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick, addFavorites: this.addFavorites})
     else if(isOpen == false)
       return React.createElement(List, {objects: this.state.objects, onArticleClick: this.onClick})
     else 
-      return React.createElement(History, {localHistory: history, onMapClick: this.onClick})
+      return React.createElement(History, {localHistory: this.props.store.history, onMapClick: this.onClick, clearHistory: this.clearHistory})
   },
 
   createViewerList: function(){
     return React.createElement(FavouritesList, {favourites: this.props.store.favourites, onSelectableClick: this.onSelectableClick})
   },
+   
+  createViewHistory() {
+     if(isOpen === true) {
+  	return React.createElement("button", {className: "active", onClick: () => this.clearHistory()}, "Очистить"); }
+  }, 
 
   render: function() {
     return (
@@ -115,7 +147,8 @@ var MapInterface = React.createClass({displayName: "MapInterface",
               React.createElement(QuestionLine, {onChange: this.onAgentParamsChange, questions: this.props.questions})
             ), 
             React.createElement(Timeline, {onTimeChange: this.onAgentParamsChange}),
-            React.createElement("button", {className: "active", onClick: this.openHistory}, "История"), 
+            React.createElement("button", {className: "active", onClick: this.openHistory}, "История"),
+	    this.createViewHistory(), 
             this.createViewer(),
             React.createElement(GeneratePath),
             React.createElement(FavouritesButtons, {chosen: this.state.chosen, onAddClick:this.onAddClick, onSortClick: this.onSortClick, onDeleteClick: this.onDeleteClick}),

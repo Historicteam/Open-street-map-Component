@@ -1,8 +1,9 @@
-var history = [];
+var favorites = [];
 var Article = React.createClass({displayName: "Article",
   propTypes: {
     object: React.PropTypes.object,
-    onListClick: React.PropTypes.func
+    onListClick: React.PropTypes.func,
+    addFavorites: React.PropTypes.func
   },
 
   doDefaultCommand: function() {
@@ -12,16 +13,7 @@ var Article = React.createClass({displayName: "Article",
   appendArgument: function() {
     SCWeb.core.Arguments.appendArgument(this.props.object.id);
   },
-  addToHistory: function() {
-    if(history.indexOf(this.props.object) < 0){
-    	history.push(this.props.object);
-    }
-    history.forEach((histor) => console.log(histor));
-  },
 
-  openFavorite: function(idOfObject) {
-    SCWeb.core.Main.doDefaultCommand([idOfObject]);
-  },
   render: function() {
     return (
       React.createElement("div", {className: "panel panel-default"}, 
@@ -37,8 +29,8 @@ var Article = React.createClass({displayName: "Article",
             React.createElement("li", {className: "active"}, React.createElement("a", {href: "#", onClick: this.doDefaultCommand}, "Перейти к статье")),
             React.createElement("li", null, React.createElement("a", {href: "#", onClick: this.props.onListClick}, "Назад"))
           )
-        ), 
-        this.addToHistory(),
+        ),
+        this.props.addFavorites(this.props.object),
       )
     );
   }

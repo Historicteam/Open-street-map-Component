@@ -13,7 +13,8 @@ MapStore = {
         contour: null,
         loaded: true,
         favourites: [],
-        selectable: null
+        selectable: null,
+        history: []
       },
       actionCallbacks: {
         importObject: function(updater, coordinates) {
@@ -51,20 +52,23 @@ MapStore = {
 
 	sortFavourites: function(updater){
           console.log("sortFavourites");
-	  updater.set({favourites: this.favourites.sort((a,b) => {
+	   this.favourites.sort((a,b) => {
        	    if(a.title > b.title)	
  		return 1;
             if(a.title < b.title)
 		return -1;
             return 0;
         }
-        )})
+        )
+	  updater.set({favourites: this.favourites});
         },
 
-        deleteFavourite: function(updater, chosen){
+        deleteFavourite: function(updater){
 	  if(this.selectable) {
-	    this.favourites = this.favourites.splice(this.favourites.indexOf(chosen), 1);
+	    console.log(this.selectable);
+	    this.favourites = this.favourites.splice(this.favourites.indexOf(this.selectable), 1);
 	  }
+	  this.selectable = null;
         }
     }});
   }
