@@ -102,7 +102,7 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     this.forceUpdate();
   },
 
-  addFavorites: function(object) {
+  addToHistory: function(object) {
     if(this.props.store.history.indexOf(object) < 0){
     	this.props.store.history.push(object);
         this.setState({history: this.props.store.history});	
@@ -121,7 +121,7 @@ var MapInterface = React.createClass({displayName: "MapInterface",
 
   createViewer: function() {
     if (this.state.chosen != null && this.state.chosen)
-      return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick, addFavorites: this.addFavorites})
+      return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick, addToHistory: this.addToHistory})
     else if(isOpen == false)
       return React.createElement(List, {objects: this.state.objects, onArticleClick: this.onClick})
     else 

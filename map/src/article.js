@@ -1,9 +1,8 @@
-var favorites = [];
 var Article = React.createClass({displayName: "Article",
   propTypes: {
     object: React.PropTypes.object,
     onListClick: React.PropTypes.func,
-    addFavorites: React.PropTypes.func
+    addToHistory: React.PropTypes.func
   },
 
   doDefaultCommand: function() {
@@ -30,7 +29,7 @@ var Article = React.createClass({displayName: "Article",
             React.createElement("li", null, React.createElement("a", {href: "#", onClick: this.props.onListClick}, "Назад"))
           )
         ),
-        this.props.addFavorites(this.props.object),
+        this.props.addToHistory(this.props.object),
       )
     );
   }
