@@ -86,9 +86,9 @@ var MapInterface = React.createClass({displayName: "MapInterface",
   
   onDeleteClick: function(){
     if(this.props.store.selectable) {
-      this.props.store.favourites.splice(this.favourites.indexOf(this.selectable), 1);
+      this.props.store.favourites.splice(this.props.store.favourites.indexOf(this.props.store.selectable), 1);
     }
-    this.selectable = null;
+    this.props.store.selectable = null;
     this.setState({favourites: this.props.store.favourites});
     
   },
