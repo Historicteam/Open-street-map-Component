@@ -1,3 +1,4 @@
+var favorites = [];
 var Article = React.createClass({
   propTypes: {
     object: React.PropTypes.object,
@@ -26,6 +27,18 @@ var Article = React.createClass({
           <ul className="nav nav-pills">
             <li className="active"><a href="#" onClick={this.doDefaultCommand}>Перейти к статье</a></li>
             <li><a href="#" onClick={this.props.onListClick}>Назад</a></li>
+          </ul>
+        </div>
+        <div className="panel">
+          <ul className="nav nav-pills">
+            <li className="active"><a href="#" onClick={this.addFavorites}>Добавить в избранное</a></li>
+          </ul>
+        </div>
+        <div className="panel">
+          <ul>
+          <For each="item" in={favorites}>
+            <li className="active"><a href="#" onClick={this.openFavorite(item.id)}>${item.id}</a></li>
+          </For>
           </ul>
         </div>
       </div>

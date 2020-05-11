@@ -1,7 +1,8 @@
 var Article = React.createClass({displayName: "Article",
   propTypes: {
     object: React.PropTypes.object,
-    onListClick: React.PropTypes.func
+    onListClick: React.PropTypes.func,
+    addToHistory: React.PropTypes.func
   },
 
   doDefaultCommand: function() {
@@ -24,10 +25,11 @@ var Article = React.createClass({displayName: "Article",
         ), 
         React.createElement("div", {className: "panel-footer"}, 
           React.createElement("ul", {className: "nav nav-pills"}, 
-            React.createElement("li", {className: "active"}, React.createElement("a", {href: "#", onClick: this.doDefaultCommand}, "Перейти к статье")), 
+            React.createElement("li", {className: "active"}, React.createElement("a", {href: "#", onClick: this.doDefaultCommand}, "Перейти к статье")),
             React.createElement("li", null, React.createElement("a", {href: "#", onClick: this.props.onListClick}, "Назад"))
           )
-        )
+        ),
+        this.props.addToHistory(this.props.object),
       )
     );
   }
