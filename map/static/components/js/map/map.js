@@ -498,7 +498,7 @@ var FavouritesButtons=React.createClass({displayName: "FavouritesButtons",
         return(
             React.createElement("div",{className:"form-group"},
               React.createElement("button",{className:"active", onClick: () => this.props.onAddClick(this.props.chosen)},
-              "Кнопка добавить в избранное")
+              "Добавить в избранное")
         )
         );
     }

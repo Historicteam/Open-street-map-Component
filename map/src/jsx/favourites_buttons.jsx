@@ -7,7 +7,7 @@ var FavouritesButtons=React.createClass({
     render: function(){
         return(
             <div className="form-group">
-                <button className="active" onСlick={()=>this.props.onAddClick(this.props.chosen)}>Кнопка добавить в избранное</button>
+                <button className="active" onСlick={()=>this.props.onAddClick(this.props.chosen)}>Добавить в избранное</button>
             </div>
         );
     }
