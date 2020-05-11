@@ -16,7 +16,7 @@ var List = React.createClass({displayName: "List",
 
   render: function() {
     return (
-      React.createElement("div", {className: "list-group", ref: "list", style: {overflowY: "auto", maxHeight: "300px"}}, 
+      React.createElement("div", {className: "list-group", ref: "list", style: {overflowY: "auto", maxHeight: "200px"}}, 
         
           this.props.objects.map(function(object, index) {
             return (
@@ -38,3 +38,4 @@ var List = React.createClass({displayName: "List",
     );
   }
 });
+

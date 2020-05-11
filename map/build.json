@@ -10,6 +10,8 @@
 	"src/generate_path.js",
 	"src/question_line.js",
 	"src/timeline.js",
+	"src/favourites_buttons.js",
+	"src/favourites_list.js",
 	"src/utils.js"   
         ],
 	
@@ -17,3 +19,4 @@
 
 	"target": "static/components/js/map/map.js"
 }
+

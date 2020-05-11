@@ -11,7 +11,8 @@ MapStore = {
         objects: {},
         chosen: null,
         contour: null,
-        loaded: true
+        loaded: true,
+        favourites: []
       },
       actionCallbacks: {
         importObject: function(updater, coordinates) {
@@ -37,6 +38,11 @@ MapStore = {
         },
         setLoadState: function(updater, loaded) {
           updater.set({loaded: loaded})
+        },
+        setFavouritesState: function(updater, chosen){
+debugger;
+          if (!this.favourites.includes(chosen))
+             updater.set({favourites: [...this.favourites, chosen]}) 
         }
       }
     });

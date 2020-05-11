@@ -9,6 +9,7 @@ var MapInterface = React.createClass({
     this.initChosenListener();
     this.initObjectsListener();
     this.initLoadedListener();
+    this.initFavourites();
   },
 
   cleanModel: function() {
@@ -33,11 +34,19 @@ var MapInterface = React.createClass({
     });
   },
 
+  initFavourites: function(){
+    this.props.store.on('change:favourites', (favourites)=>{
+      this.setState({favourites: favourites});
+    });
+
+  },
+
   getInitialState: function() {
     return {
       objects: Object.values(this.props.store.objects),
       chosen: this.props.store.chosen,
-      loaded: this.props.store.loaded
+      loaded: this.props.store.loaded,
+      favourites: this.props.store.favourites
     };
   },
 
@@ -53,10 +62,16 @@ var MapInterface = React.createClass({
     fluxify.doAction('importObject', coordinates);
   },
 
+  onAddClick: function(chosen){
+    fluxify.doAction('setFavouritesState', chosen)
+  },
+
+  
   //TODO remove hard-coded question
   onAgentParamsChange: function(params) {
     SCWeb.core.Main.doCommand(MapKeynodes.get('ui_menu_file_for_finding_persons'), [this.state.chosen.id]);
   },
+
 
   createViewer: function() {
     if (this.state.chosen)
@@ -65,6 +80,11 @@ var MapInterface = React.createClass({
       return <List objects={this.state.objects} onArticleClick={this.onClick}/>
   },
 
+  createViewerList: function(){
+    return (<FavouritesList favourites={this.props.store.favourites}/>)
+  },
+
+  
   render: function() {
     return (
       <Loader loaded={this.state.loaded}>
@@ -76,9 +96,12 @@ var MapInterface = React.createClass({
             </div>
             <Timeline onTimeChange={this.onAgentParamsChange}/>
             {this.createViewer()}
+            <FavouritesButtons chosen={this.state.chosen} onAddClick={this.onAddClick}/>
+            {this.createViewerList()}
           </div>
         </div>
       </Loader>
     );
   }
 });
+
