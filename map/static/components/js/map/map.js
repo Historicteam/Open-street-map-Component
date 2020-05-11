@@ -44,7 +44,8 @@ MapStore = {
         objects: {},
         chosen: null,
         contour: null,
-        loaded: true
+        loaded: true,
+        favourites: []
       },
       actionCallbacks: {
         importObject: function(updater, coordinates) {
@@ -57,7 +58,7 @@ MapStore = {
           updater.set({objects: objects});
         },
         clean: function(updater) {
-          updater.set({objects: {}, chosen: null});
+          updater.set({objects: {}, chosen: null, favourites:[]});
         },
         chooseObject: function(updater, object) {
           updater.set({chosen: object})
@@ -70,11 +71,59 @@ MapStore = {
         },
         setLoadState: function(updater, loaded) {
           updater.set({loaded: loaded})
+        },
+        setFavouritesState: function(updater, chosen){
+          if (!this.favourites.includes(chosen))
+             updater.set({favourites: [...this.favourites, chosen]}) 
         }
       }
     });
   }
 }
+
+
+/* --- src/favourites_list.js --- */
+
+var FavouritesList = React.createClass({displayName: "FavouritesList",
+  propTypes: {
+    favourites: React.PropTypes.array,
+  },
+
+  getDescription: function(favourite) {
+    if (favourite.description)
+      return favourite.description.slice(0, 100) + "...";
+  },
+
+  getPreview: function(favourite) {
+    if (favourite.image)
+      return React.createElement("img", {src: favourite.image, className: "img-thumbnail"})
+  },
+
+  render: function() {
+    return (
+      React.createElement("div", {className: "list-group", ref: "list", style: {overflowY: "auto", maxHeight: "150px"}}, 
+        
+          this.props.favourites.map(function(favourite, index) {
+            return (
+              React.createElement("a", {key: index, href: "#", className: "list-group-item"}, 
+                React.createElement("h4", {className: "list-group-item-heading"}, favourite.title), 
+                React.createElement("div", {className: "row"}, 
+                  React.createElement("div", {className: "col-sm-5"}, 
+                    this.getPreview(favourite)
+                  ), 
+                  React.createElement("div", {className: "col-sm-7"}, 
+                    React.createElement("p", {className: "list-group-item-text"}, this.getDescription(favourite))
+                  )
+                )
+              )
+            );
+          }, this
+        )
+      )
+    );
+  }
+});
+
 
 /* --- src/article.js --- */
 var Article = React.createClass({displayName: "Article",
@@ -94,7 +143,7 @@ var Article = React.createClass({displayName: "Article",
   render: function() {
     return (
       React.createElement("div", {className: "panel panel-default"}, 
-        React.createElement("div", {className: "panel-body", style: {overflowY: "auto", maxHeight: "300px"}}, 
+        React.createElement("div", {className: "panel-body", style: {overflowY: "auto", maxHeight: "200px"}}, 
           React.createElement("h4", {onClick: this.appendArgument, style: {cursor: "pointer"}}, 
             this.props.object.title
           ), 
@@ -132,7 +181,7 @@ var List = React.createClass({displayName: "List",
 
   render: function() {
     return (
-      React.createElement("div", {className: "list-group", ref: "list", style: {overflowY: "auto", maxHeight: "300px"}}, 
+      React.createElement("div", {className: "list-group", ref: "list", style: {overflowY: "auto", maxHeight: "200px"}}, 
         
           this.props.objects.map(function(object, index) {
             return (
@@ -343,6 +392,7 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     this.initChosenListener();
     this.initObjectsListener();
     this.initLoadedListener();
+    this.initFavourites();
   },
 
   cleanModel: function() {
@@ -367,11 +417,19 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     });
   },
 
+  initFavourites: function(){
+    this.props.store.on('change:favourites', (favourites)=>{
+      this.setState({favourites: favourites});
+    });
+
+  },
+
   getInitialState: function() {
     return {
       objects: Object.values(this.props.store.objects),
       chosen: this.props.store.chosen,
-      loaded: this.props.store.loaded
+      loaded: this.props.store.loaded,
+      favourites: this.props.store.favourites
     };
   },
 
@@ -387,6 +445,11 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     fluxify.doAction('importObject', coordinates);
   },
 
+  onAddClick: function(chosen){
+    fluxify.doAction('setFavouritesState', chosen)
+  },
+
+
   //TODO remove hard-coded question
   onAgentParamsChange: function(params) {
     SCWeb.core.Main.doCommand(MapKeynodes.get('ui_menu_file_for_finding_persons'), [this.state.chosen.id]);
@@ -397,6 +460,10 @@ var MapInterface = React.createClass({displayName: "MapInterface",
       return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick})
     else
       return React.createElement(List, {objects: this.state.objects, onArticleClick: this.onClick})
+  },
+
+  createViewerList: function(){
+    return React.createElement(FavouritesList,{favourites: this.props.store.favourites})
   },
 
   render: function() {
@@ -410,7 +477,9 @@ var MapInterface = React.createClass({displayName: "MapInterface",
             ), 
             React.createElement(Timeline, {onTimeChange: this.onAgentParamsChange}), 
             this.createViewer(),
-            React.createElement(GeneratePath)
+            React.createElement(GeneratePath),
+            React.createElement(FavouritesButtons, {chosen: this.state.chosen, onAddClick:this.onAddClick}),
+            this.createViewerList()
           )
         )
       )
@@ -418,6 +487,22 @@ var MapInterface = React.createClass({displayName: "MapInterface",
   }
 });
 
+/* --- src/favourites_buttons.js --- */
+var FavouritesButtons=React.createClass({displayName: "FavouritesButtons", 
+    propTypes: {
+        chosen: React.PropTypes.object,
+        onAddClick: React.PropTypes.func,
+    },
+
+    render: function(){
+        return(
+            React.createElement("div",{className:"form-group"},
+              React.createElement("button",{className:"active", onClick: () => this.props.onAddClick(this.props.chosen)},
+              "Добавить в избранное")
+        )
+        );
+    }
+});
 
 /* --- src/generate_path.js --- */
 var MapState = {};
@@ -975,5 +1060,6 @@ MapViewer.prototype.getQuestions = function() {
 
 
 SCWeb.core.ComponentManager.appendComponentInitialize(MapComponent);
+
 
 

@@ -9,6 +9,7 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     this.initChosenListener();
     this.initObjectsListener();
     this.initLoadedListener();
+    this.initFavourites();
   },
 
   cleanModel: function() {
@@ -33,11 +34,19 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     });
   },
 
+  initFavourites: function(){
+    this.props.store.on('change:favourites', (favourites)=>{
+      this.setState({favourites: favourites});
+    });
+
+  },
+
   getInitialState: function() {
     return {
       objects: Object.values(this.props.store.objects),
       chosen: this.props.store.chosen,
-      loaded: this.props.store.loaded
+      loaded: this.props.store.loaded,
+      favourites: this.props.store.favourites
     };
   },
 
@@ -53,6 +62,11 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     fluxify.doAction('importObject', coordinates);
   },
 
+  onAddClick: function(chosen){
+    fluxify.doAction('setFavouritesState', chosen)
+  },
+
+  
   //TODO remove hard-coded question
   onAgentParamsChange: function(params) {
     SCWeb.core.Main.doCommand(MapKeynodes.get('ui_menu_file_for_finding_persons'), [this.state.chosen.id]);
@@ -63,6 +77,10 @@ var MapInterface = React.createClass({displayName: "MapInterface",
       return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick})
     else
       return React.createElement(List, {objects: this.state.objects, onArticleClick: this.onClick})
+  },
+
+  createViewerList: function(){
+    return React.createElement(FavouritesList,{favourites: this.props.store.favourites})
   },
 
   render: function() {
@@ -76,10 +94,13 @@ var MapInterface = React.createClass({displayName: "MapInterface",
             ), 
             React.createElement(Timeline, {onTimeChange: this.onAgentParamsChange}), 
             this.createViewer(),
-            React.createElement(GeneratePath)
+            React.createElement(GeneratePath),
+            React.createElement(FavouritesButtons, {chosen: this.state.chosen, onAddClick:this.onAddClick}),
+            this.createViewerList()
           )
         )
       )
     );
   }
 });
+
