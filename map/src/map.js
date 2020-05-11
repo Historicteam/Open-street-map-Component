@@ -88,28 +88,21 @@ var Map = React.createClass({displayName: "Map",
 
       self.control = L.Routing.control({
         waypoints: MapUtils.generateShortestPath(startPoint, waypoints),
-        router: L.Routing.mapzen('mapzen-iuuXAyV', {costing: pathType}),
-        formatter: new L.Routing.mapzenFormatter(),
-        summaryTemplate:'<div class="start">{name}</div><div class="info {costing}">{distance}, {time}</div>',
+        router: L.Routing.graphHopper('93039970-6314-411f-b128-5ab4a986d036', { urlParameters: { vehicle: pathType, locale: 'ru' } }),
         showAlternatives: false,
         routeWhileDragging: false,
-        show: false,
+        //show: false,
         lineOptions: {
           styles: getLineStyleByType(pathType)
         },
-        createMarker: function() { return null; }
-      });
-
-      self.control.on('routesfound', function(e) {
-        self.control.addTo(self.map);
+        createMarker: function () { return null; }
+      }).on('routesfound', function (e) {
         self.userLocationMarker = L.marker([startPoint.lat, startPoint.lng]).addTo(self.map);
         self.userLocationMarker.bindPopup("<b>Вы здесь</b>").openPopup();
         self.map.setView([startPoint.lat, startPoint.lng], 14);
-      });
-
-      self.control.on('routingerror', function(e) {
+      }).on('routingerror', function (e) {
         alert("Что-то пошло не так: " + JSON.parse(e.error.message).error);
-      });
+      }).addTo(self.map);
 
     }, function(failure) {
         alert("Нет доступа к вашему местоложению\n" + failure.message);
