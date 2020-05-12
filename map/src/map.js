@@ -112,10 +112,10 @@ var Map = React.createClass({displayName: "Map",
       var lineMainColor;
 
       switch(pathType) {
-        case "auto":
+        case "car":
           lineMainColor = "#ff2f00";
           break;
-        case "bicycle":
+        case "bike":
           lineMainColor = "#7fff0b";
           break;
         default: 
