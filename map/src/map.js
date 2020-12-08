@@ -88,10 +88,10 @@ var Map = React.createClass({displayName: "Map",
 
       self.control = L.Routing.control({
         waypoints: MapUtils.generateShortestPath(startPoint, waypoints),
-        router: L.Routing.graphHopper('93039970-6314-411f-b128-5ab4a986d036', { urlParameters: { vehicle: pathType, locale: 'ru' } }),
+        router: L.Routing.mapbox('pk.eyJ1IjoibG9zaWsiLCJhIjoiY2tobmg3a3pkMGZnZjJ0bDF3NWVrNDh4MiJ9.LydjoGpORwJoiqabKnxTOQ', { profile: pathType, language: 'ru' }),
         showAlternatives: false,
         routeWhileDragging: false,
-        //show: false,
+        show: false,
         lineOptions: {
           styles: getLineStyleByType(pathType)
         },
@@ -112,10 +112,10 @@ var Map = React.createClass({displayName: "Map",
       var lineMainColor;
 
       switch(pathType) {
-        case "car":
+        case "mapbox/driving":
           lineMainColor = "#ff2f00";
           break;
-        case "bike":
+        case "mapbox/cycling":
           lineMainColor = "#7fff0b";
           break;
         default: 

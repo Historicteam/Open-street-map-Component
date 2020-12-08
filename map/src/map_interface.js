@@ -1,4 +1,6 @@
 var isOpen = false;
+var toOpenFavourites = false;
+var isAscending = false;
 var MapInterface = React.createClass({displayName: "MapInterface",
   propTypes: {
     questions: React.PropTypes.array,
@@ -72,15 +74,45 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     fluxify.doAction('setFavouritesState', chosen);
   },
 
+  //new
+  onUpClick: function(){
+    fluxify.doAction('moveFavouriteUp', this.props.store.selectable);
+  },
+
   onSortClick: function(){
-    this.props.store.favourites.sort((a,b) => {
+    isAscending = isAscending == true ? false : true;
+    if (isAscending==true){
+      this.props.store.favourites.sort((a,b) => {
        	    if(a.title > b.title)	
- 		return 1;
+ 	  	return 1;
             if(a.title < b.title)
-		return -1;
+	  	return -1;
             return 0;
           }
-          );
+      );
+    } 
+    else{
+      this.props.store.favourites.sort((a,b) => {
+        if(a.title < b.title)	
+      return 1;
+       if(a.title > b.title)
+      return -1;
+        return 0;
+     }
+     );
+    }  
+    this.setState({favourites: this.props.store.favourites});
+  },
+
+  moveFavourite: function(){
+    var selectable = this.props.store.selectable;
+    console.log("moving up", selectable, this.props.store.favourites);
+    var i = this.props.store.favourites.indexOf(selectable);
+    console.log("index found", i);
+    this.props.store.favourites.splice(i,1);
+    console.log("deleted element");
+    this.props.store.favourites.unshift(selectable);
+    console.log("moved up");
     this.setState({favourites: this.props.store.favourites});
   },
   
@@ -90,7 +122,6 @@ var MapInterface = React.createClass({displayName: "MapInterface",
     }
     this.props.store.selectable = null;
     this.setState({favourites: this.props.store.favourites});
-    
   },
   
   onSelectableClick: function(chosen){
@@ -100,6 +131,15 @@ var MapInterface = React.createClass({displayName: "MapInterface",
   openHistory: function() {
     isOpen = isOpen == true ? false : true;
     this.forceUpdate();
+  },
+
+  openFavourites: function(){
+    toOpenFavourites = toOpenFavourites == true? false:true;
+    this.forceUpdate();
+  },
+
+  addToFavourites: function(){
+    this.onAddClick(this.state.chosen);
   },
 
   addToHistory: function(object) {
@@ -122,16 +162,20 @@ var MapInterface = React.createClass({displayName: "MapInterface",
   createViewer: function() {
     if (this.state.chosen != null && this.state.chosen)
       return React.createElement(Article, {object: this.state.chosen, onListClick: this.onListClick, addToHistory: this.addToHistory})
+    else if (toOpenFavourites == true){
+      return React.createElement("div", {className: "form-group"}, 
+                React.createElement(FavouritesList, {favourites: this.props.store.favourites, onSelectableClick: this.onSelectableClick}),
+                React.createElement(FavouritesButtons, {
+                  chosen: this.state.chosen, onSortClick: this.onSortClick, onDeleteClick: this.onDeleteClick, moveFavourite: this.moveFavourite}
+                )
+      )
+    }
     else if(isOpen == false)
       return React.createElement(List, {objects: this.state.objects, onArticleClick: this.onClick})
     else 
       return React.createElement(History, {localHistory: this.props.store.history, onMapClick: this.onClick, clearHistory: this.clearHistory})
   },
 
-  createViewerList: function(){
-    return React.createElement(FavouritesList, {favourites: this.props.store.favourites, onSelectableClick: this.onSelectableClick})
-  },
-   
   createViewHistory() {
      if(isOpen === true) {
   	return React.createElement("button", {className: "active", onClick: () => this.clearHistory()}, "Очистить"); }
@@ -147,12 +191,13 @@ var MapInterface = React.createClass({displayName: "MapInterface",
               React.createElement(QuestionLine, {onChange: this.onAgentParamsChange, questions: this.props.questions})
             ), 
             React.createElement(Timeline, {onTimeChange: this.onAgentParamsChange}),
+
             React.createElement("button", {className: "active", onClick: this.openHistory}, "История"),
-	    this.createViewHistory(), 
+            this.createViewHistory(),
             this.createViewer(),
             React.createElement(GeneratePath),
-            React.createElement(FavouritesButtons, {chosen: this.state.chosen, onAddClick:this.onAddClick, onSortClick: this.onSortClick, onDeleteClick: this.onDeleteClick}),
-            this.createViewerList()
+            React.createElement("button", {className: "active", onClick: this.openFavourites}, "Просмотр избранных"),  
+            React.createElement("button",{className:"active", onClick: this.addToFavourites}, "Добавить в избранное"),
           )
         )
       )

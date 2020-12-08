@@ -138,6 +138,7 @@ var MapUtils = {
     var contour = MapStore.get().contour;
     return {
       extract: function() {
+        var self = this
         window.sctpClient.get_arc(arc)
         .done((nodes) => {
           this.checkTerrainObject(nodes[1])
@@ -146,6 +147,64 @@ var MapUtils = {
             this.extractDescription(nodes[1], contour);
             this.extractImage(nodes[1], contour);
             this.extractCoordinates(nodes[1]);
+          })
+          .fail(() => {
+            var object = nodes[1]
+            window.sctpClient.iterate_constr(
+              SctpConstrIter(SctpIteratorType.SCTP_ITERATOR_3F_A_F,
+                [
+                  MapKeynodes.get("concept_route"),
+                  sc_type_arc_pos_const_perm,
+                  object
+                ])
+                ).done(function(res){
+                  if (res.exist()) {
+                    window.sctpClient.iterate_constr(
+                      SctpConstrIter(SctpIteratorType.SCTP_ITERATOR_5A_A_F_A_F,
+                        [
+                          sc_type_node,
+                          sc_type_arc_common | sc_type_const,
+                          object,
+                          sc_type_arc_pos_const_perm,
+                          MapKeynodes.get("nrel_basic_decomposition")
+                        ], {"temp_node": 0}),
+                      SctpConstrIter(SctpIteratorType.SCTP_ITERATOR_5F_A_A_A_F,
+                        [
+                          "temp_node",
+                          sc_type_arc_pos_const_perm,
+                          sc_type_node,
+                          sc_type_arc_pos_const_perm,
+                          MapKeynodes.get("rrel_1")
+                        ], {"start_point": 2})
+                    ).done(function(result){
+                      if (result.exist()) {
+                        function getNextPoint(point) {
+                          window.sctpClient.iterate_constr(
+                            SctpConstrIter(SctpIteratorType.SCTP_ITERATOR_5F_A_A_A_F,
+                              [
+                                point,
+                                sc_type_arc_common | sc_type_const,
+                                sc_type_node,
+                                sc_type_arc_pos_const_perm,
+                                MapKeynodes.get("nrel_next_point")
+                              ], {"next_point": 2})
+                          ).done(function(result){
+                            if (result.exist()) {
+                              next_point_addr = result.get(0, "next_point")
+                              self.extractGeoCordinates(point)
+                              getNextPoint(next_point_addr)
+                            }
+                          }).fail(() => {
+                            self.extractGeoCordinates(point)
+                          }
+                          )
+                        }
+                        getNextPoint(result.get(0, "start_point"))
+                      }
+                    }).fail(
+                    )
+                  }
+                })
           })
         });
       },
@@ -345,6 +404,48 @@ var MapUtils = {
       extractGeoJSON: function(id, query) {
         MapUtils.doOSMQuery(MapUtils.getOSMQuery(query), function(data) {
           fluxify.doAction('changeObject', {id: id, geojson: osmtogeojson(data)});
+        })
+      },
+      extractGeoCordinates: function(object) {
+        var self = this;
+        window.sctpClient.iterate_constr(
+          SctpConstrIter(SctpIteratorType.SCTP_ITERATOR_5F_A_A_A_F,
+            [
+              object,
+              sc_type_arc_common | sc_type_const,
+              sc_type_node,
+              sc_type_arc_pos_const_perm,
+              MapKeynodes.get("nrel_geographical_location")
+            ], {"temp_node": 2}),
+          SctpConstrIter(SctpIteratorType.SCTP_ITERATOR_3F_A_F,
+            [
+              MapKeynodes.get("concept_mapped_point"),
+              sc_type_arc_pos_const_perm,
+              "temp_node"
+            ]),
+          SctpConstrIter(SctpIteratorType.SCTP_ITERATOR_5F_A_A_A_F,
+            [
+              "temp_node",
+              sc_type_arc_common | sc_type_const,
+              sc_type_link,
+              sc_type_arc_pos_const_perm,
+              MapKeynodes.get("nrel_WGS_84_translation")
+            ], {"cords": 2})
+        ).done(function(results) {
+          window.sctpClient.get_link_content(results.get(0, "cords"))
+          .done((cords) => {
+            cords_arr = cords.split(',')
+            new_cords = {lat: parseFloat(cords_arr[0].trim()), lng: parseFloat(cords_arr[1].trim())}
+            temp_geojson = {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {"type": "Point", "coordinates": [new_cords.lng, new_cords.lat]}
+                }
+              ]}
+            fluxify.doAction('changeObject', {id: object, geojson: temp_geojson})
+          })
         })
       },
     }

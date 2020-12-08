@@ -2,7 +2,7 @@ var MapState = {};
 
 var GeneratePath = React.createClass({displayName: "GeneratePath",
   componentDidMount: function() {
-    this.setState({pathType: "foot"});
+    this.setState({pathType: "mapbox/walking"});
   },
 
   generatePath: function() {
@@ -24,19 +24,19 @@ var GeneratePath = React.createClass({displayName: "GeneratePath",
         React.createElement("div", {className: "form-group"},
           React.createElement("div", {style: {fontSize: "16px"}},
             React.createElement("label", {style: {cursor: "pointer", fontWeight: 400, margin: 0}}, 
-              React.createElement("input", {type: "radio", name: "pathTypes", value: "foot", style: {marginRight: "5px"}, onChange: this.onPathTypeChange, defaultChecked: true}),
+              React.createElement("input", {type: "radio", name: "pathTypes", value: "mapbox/walking", style: {marginRight: "5px"}, onChange: this.onPathTypeChange, defaultChecked: true}),
               "Пешком"
             ),
           ),
           React.createElement("div", {style: {fontSize: "16px"}},
             React.createElement("label", {style: {cursor: "pointer", fontWeight: 400, margin: 0}}, 
-              React.createElement("input", {type: "radio", name: "pathTypes", value: "car", style: {marginRight: "5px"}, onChange: this.onPathTypeChange}),
+              React.createElement("input", {type: "radio", name: "pathTypes", value: "mapbox/driving", style: {marginRight: "5px"}, onChange: this.onPathTypeChange}),
               "На машине"
             ),
           ),
           React.createElement("div", {style: {fontSize: "16px"}},
             React.createElement("label", {style: {cursor: "pointer", fontWeight: 400, margin: 0}}, 
-              React.createElement("input", {type: "radio", name: "pathTypes", value: "bike", style: {marginRight: "5px"}, onChange: this.onPathTypeChange}),
+              React.createElement("input", {type: "radio", name: "pathTypes", value: "mapbox/cycling", style: {marginRight: "5px"}, onChange: this.onPathTypeChange}),
               "На велосипеде"
             )
           )
